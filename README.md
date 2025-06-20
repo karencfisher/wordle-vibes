@@ -109,8 +109,8 @@ Utility functions for:
 - **Correct Letter, Wrong Position (Yellow)**: 1 point per letter
 - **Letter Hints**: 0 points per letter
 - **Incorrect Letter (Gray)**: 0 points
-- **Multiplier**: Score multiplied if the word is guessed. Multiplier depends
-on the number of guesses used, with 8 being guessed in one try, decreasing
+- **Multiplier**: Score is multiplied if the word is guessed succesfully. The multiplier depends
+on the number of guesses used, with 8 being guessed in one try, and decreasing
 progressively to 2 if guessed in the last try.
 
 ## Development
