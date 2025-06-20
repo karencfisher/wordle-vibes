@@ -1,6 +1,6 @@
 # Wordle Vibes
 
-A React-based Wordle game built with Vite, featuring a complete implementation of the popular word-guessing game. Built largely using "vibe coding" and human tweaked.
+A React-based Wordle game built with Vite, featuring a complete implementation of the popular word-guessing game. Built largely using "vibe coding" and human tweaked to taste. Includes features such as hints, word clues, and a scoring system. 
 
 ## Features
 
