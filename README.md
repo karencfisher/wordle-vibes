@@ -101,7 +101,7 @@ Utility functions for:
 6. **Hint**: Click "Get Hint" if you need help (reveals one correct letter)
 7. **Win/Lose**: Win by guessing correctly or lose after 7 incorrect guesses
 8. **New Game**: Click "New Game" to start over with a new word
-9. **Word Clue**: Get a wordcross type sentence word clue.
+9. **Word Clue**: Get a wordcross type sentence word clue (not yet implemented).
 
 ## Scoring System
 
