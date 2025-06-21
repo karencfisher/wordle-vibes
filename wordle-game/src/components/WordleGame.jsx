@@ -1,18 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getRandomWord, isValidWord } from '../utils/words';
 import './WordleGame.css';
 
 const WordleGame = () => {
   const [targetWord, setTargetWord] = useState('');
+  const [wordClue, setWordClue] = useState('');
   const [guesses, setGuesses] = useState(Array(7).fill(''));
   const [currentGuess, setCurrentGuess] = useState(0);
   const [currentInput, setCurrentInput] = useState('');
+  const [currentWordGuess, setCurrentWordGuess] = useState('');
   const [gameStatus, setGameStatus] = useState('playing'); // 'playing', 'won', 'lost'
   const [score, setScore] = useState(0);
   const [sessionScore, setSessionScore] = useState(0);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [hintPositions, setHintPositions] = useState([]);
   const [message, setMessage] = useState('');
+
+  const inputRef = useRef(null);
 
   // Initialize game
   useEffect(() => {
@@ -21,10 +25,12 @@ const WordleGame = () => {
 
   const startNewGame = () => {
     const newWord = getRandomWord();
-    setTargetWord(newWord);
+    setTargetWord(newWord.word);
+    setWordClue(newWord.clue);
     setGuesses(Array(7).fill(''));
     setCurrentGuess(0);
     setCurrentInput('');
+    setCurrentWordGuess('');
     setGameStatus('playing');
     setScore(0);
     setHintsUsed(0);
@@ -136,6 +142,8 @@ const WordleGame = () => {
       return;
     }
 
+    setCurrentWordGuess(currentInput);
+
     const newGuesses = [...guesses];
     newGuesses[currentGuess] = currentInput;
     setGuesses(newGuesses);
@@ -156,12 +164,11 @@ const WordleGame = () => {
       setCurrentGuess(currentGuess + 1);
 
       let hints = '';
-      hintPositions.forEach(pos => {
-        hints += targetWord[pos];
-        setCurrentInput
-      })
-      setCurrentInput(hints);
-
+      for (let i = 0; i < 5; i++) {
+        hints += hintPositions.includes(i) ? targetWord[i] : ' ';
+      }
+      setCurrentWordGuess(hints);
+      setCurrentInput('');
       setMessage('');
     }
   };
@@ -176,10 +183,10 @@ const WordleGame = () => {
       if (!hintPositions.includes(i) && (!currentInput[i] || currentInput[i] !== targetArray[i])) {
         let prefix = '';
         if (i > 0) {
-          prefix = !currentInput.substring(0, i) ? ' '.repeat(i): currentInput.substring(0, i) ;
+          prefix = !currentWordGuess.substring(0, i) ? ' '.repeat(i): currentWordGuess.substring(0, i) ;
         }
-        const newInput = prefix + targetArray[i] + currentInput.substring(i + 1);
-        setCurrentInput(newInput.padEnd(5, '').substring(0, 5));
+        const newInput = prefix + targetArray[i] + currentWordGuess.substring(i + 1);
+        setCurrentWordGuess(newInput.padEnd(5, '').substring(0, 5));
         setHintsUsed(prev => prev + 1);
         setHintPositions(prev => [...prev, i]);
         setMessage(`Hint ${hintsUsed + 1}/2: Letter ${i + 1} is "${targetArray[i].toUpperCase()}"`);
@@ -193,6 +200,12 @@ const WordleGame = () => {
       handleSubmitGuess();
     }
   };
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [currentInput, currentWordGuess]);
 
   return (
     <div className="wordle-game">
@@ -211,7 +224,7 @@ const WordleGame = () => {
               const letter = guess[letterIndex] || '';
               const status = guess ? getLetterStatus(guess, targetWord, letterIndex) : '';
               const isCurrentRow = guessIndex === currentGuess && gameStatus === 'playing';
-              const currentLetter = isCurrentRow ? currentInput[letterIndex] || '' : letter;
+              const currentLetter = isCurrentRow ? currentWordGuess[letterIndex] || '' : letter;
               const isHintPosition = isCurrentRow && hintPositions.includes(letterIndex);
               
               return (
@@ -225,12 +238,14 @@ const WordleGame = () => {
             })}
           </div>
         ))}
+      <i>Clue: {wordClue}</i>
       </div>
 
       {gameStatus === 'playing' && (
         <div className="game-controls">
           <input
             type="text"
+            ref={inputRef}
             value={currentInput}
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
