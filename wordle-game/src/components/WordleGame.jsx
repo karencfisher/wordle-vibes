@@ -39,6 +39,7 @@ const WordleGame = () => {
     setHintsUsed(0);
     setHintPositions([]);
     setMessage('');
+    setShowClue(false);
   };
 
   const calculateScore = (guess, target) => {
