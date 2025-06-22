@@ -1,8 +1,4 @@
-// import wordsText from '../words.txt?raw';
 import wordsClues from './word_clues.js';
-
-// Parse the words from the text file
-// export const WORDS = wordsText.trim().split('\n').map(word => word.trim().toLowerCase());
 
 // Get a random word from the list
 export const getRandomWord = () => {

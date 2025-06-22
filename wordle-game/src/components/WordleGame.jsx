@@ -5,6 +5,7 @@ import './WordleGame.css';
 const WordleGame = () => {
   const [targetWord, setTargetWord] = useState('');
   const [wordClue, setWordClue] = useState('');
+  const [showClue, setShowClue] = useState(false);
   const [guesses, setGuesses] = useState(Array(7).fill(''));
   const [currentGuess, setCurrentGuess] = useState(0);
   const [currentInput, setCurrentInput] = useState('');
@@ -15,6 +16,8 @@ const WordleGame = () => {
   const [hintsUsed, setHintsUsed] = useState(0);
   const [hintPositions, setHintPositions] = useState([]);
   const [message, setMessage] = useState('');
+  const [showInfo, setShowInfo] = useState(false);
+  const [infoStatus, setInfoStatus] = useState('Show');
 
   const inputRef = useRef(null);
 
@@ -201,18 +204,45 @@ const WordleGame = () => {
     }
   };
 
+  const toggleInfo = () => {
+    setShowInfo(!showInfo);
+  };
+
+  useEffect(() => {
+    const newStatus = showInfo ? "Hide" : "Show";
+    setInfoStatus(newStatus);
+  }, [showInfo]);
+
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
   }, [currentInput, currentWordGuess]);
 
+    useEffect(() => {
+    if (message) {
+      const timeout = setTimeout(() => {
+        setMessage('');
+      }, 3000);
+  
+      return () => clearTimeout(timeout); // Cleanup the timeout
+    }
+  }, [message]);
+
   return (
     <div className="wordle-game">
-      <h1>Wordle Vibes</h1>
+      <header>
+        <div>
+          Wordle Vibes
+        </div>
+        <div class="menu">
+          <button onClick={toggleInfo}>{infoStatus} Info</button>
+          <button onClick={startNewGame}>New Game</button>
+        </div>
+      </header>
       <div className="game-info">
-        <div className="score">Score: {score}</div>
-        <div className="session-score">Session: {sessionScore}</div>
+        <div className="score">Word Score: {score}</div>
+        <div className="session-score">Session Score: {sessionScore}</div>
         <div className="guess-count">Guess: {currentGuess + 1}/7</div>
         <div className="hints-remaining">Hints: {2 - hintsUsed}/2</div>
       </div>
@@ -238,54 +268,50 @@ const WordleGame = () => {
             })}
           </div>
         ))}
-      <i>Clue: {wordClue}</i>
       </div>
-
-      {gameStatus === 'playing' && (
-        <div className="game-controls">
-          <input
-            type="text"
-            ref={inputRef}
-            value={currentInput}
-            onChange={handleInputChange}
-            onKeyPress={handleKeyPress}
-            placeholder="Enter your guess..."
-            maxLength={5}
-            className="guess-input"
-          />
-          <div className="button-group">
-            <button onClick={handleSubmitGuess} disabled={currentInput.length !== 5}>
-              Submit Guess
-            </button>
-            <button onClick={handleHint} disabled={hintsUsed >= 2}>
-              Get Hint ({2 - hintsUsed} left)
-            </button>
-          </div>
+      
+      <div className={`game-controls ${gameStatus !== 'playing' ? 'disabled' : ''}`}>
+        <div className="clue" onClick={() => setShowClue(true)}>
+          {showClue ? wordClue : 'Click To Reveal Clue' }
         </div>
-      )}
+        <input
+          type="text"
+          ref={inputRef}
+          value={currentInput}
+          onChange={handleInputChange}
+          onKeyPress={handleKeyPress}
+          placeholder="Enter your guess..."
+          maxLength={5}
+          className="guess-input"
+        />
+        <div className="button-group">
+          <button onClick={handleSubmitGuess} disabled={currentInput.length !== 5}>
+            Submit Guess
+          </button>
+          <button onClick={handleHint} disabled={hintsUsed >= 2}>
+            Get Hint ({2 - hintsUsed} left)
+          </button>
+        </div>
+      </div>
 
       {message && <div className="message">{message}</div>}
 
-      <div className="game-actions">
-        <button onClick={startNewGame} className="new-game-btn">
-          New Game
-        </button>
+      {showInfo && (
+        <div className="game-rules">
+          <h3>How to Play:</h3>
+          <ul>
+            <li>Guess the 5-letter word in 7 tries. You can get up to two hints.</li>
+            <li><span className="hint-demo">Blue</span> = Letter hint in correct position (0 points)</li>
+            <li><span className="correct-demo">Green</span> = Correct letter in correct position (2 points)</li>
+            <li><span className="present-demo">Yellow</span> = Correct letter in wrong position (1 point)</li>
+            <li><span className="absent-demo">Gray</span> = Letter not in word (0 points)</li>
+            <li><b>Scoring:</b> correct guess scores word score times multiplier (higher the fewer
+              guesses). Partial guess receives the best guessed word score.
+            </li>
+          </ul>
+        </div>
+      )}
       </div>
-
-      <div className="game-rules">
-        <h3>How to Play:</h3>
-        <ul>
-          <li>Guess the 5-letter word in 7 tries. You can get up to two hints.</li>
-          <li><span className="hint-demo">Blue</span> = Letter hint in correct position (0 points)</li>
-          <li><span className="correct-demo">Green</span> = Correct letter in correct position (2 points)</li>
-          <li><span className="present-demo">Yellow</span> = Correct letter in wrong position (1 point)</li>
-          <li><span className="absent-demo">Gray</span> = Letter not in word (0 points)</li>
-          <li><b>Scoring:</b> correct guess scores word score times multiplier (higher the fewer
-            guesses). Partial guess receives the best guessed word score.
-          </li>
-        </ul>
-      </div>
-    </div>
   );
 };
 
