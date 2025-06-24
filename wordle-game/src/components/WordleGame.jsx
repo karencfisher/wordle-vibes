@@ -195,7 +195,8 @@ const WordleGame = () => {
               return (
                 <div
                   key={letterIndex}
-                  className={`letter-box ${status} ${isCurrentRow ? 'current' : ''} ${isHintPosition && currentLetter ? 'hint' : ''}`}
+                  className={`letter-box ${status} ${isCurrentRow ? 'current' : ''} 
+                    ${isHintPosition && currentLetter && currentLetter !== ' ' ? 'hint' : ''}`}
                 >
                   {currentLetter.toUpperCase()}
                 </div>
