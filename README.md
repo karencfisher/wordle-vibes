@@ -2,6 +2,8 @@
 
 A React-based Wordle game built with Vite, featuring a complete implementation of the popular word-guessing game. Built largely using "vibe coding" and human tweaked to taste. Includes features such as hints, word clues, and a scoring system. 
 
+**Update**: With closer examonation, a lot of the AI written code was muddled and buggy, as well as having built an unattractive UI. I have maybe revised 2/3 of the code now, so this is a human/AI collaboration. 
+
 ## Features
 
 - **7 Guesses**: Players have 7 attempts to guess the correct 5-letter word
@@ -12,6 +14,7 @@ A React-based Wordle game built with Vite, featuring a complete implementation o
   - ⬜ Gray: Letter not in the word (0 points)
 - **Scoring System**: Maximum 10 points per word (2 points × 5 letters)
 - **Hint System**: Get hints that reveal correct letters
+- **Word Clue**: Option to reveal a terse, wordcross style, clue (5 point bonus if one resist
 - **Word Validation**: Only accepts valid 5-letter words from the dictionary
 - **New Game**: Start fresh with a new random word
 - **Responsive Design**: Works on desktop and mobile devices
@@ -26,7 +29,8 @@ A React-based Wordle game built with Vite, featuring a complete implementation o
    - Yellow: Letter is in the word but in the wrong position
    - Gray: Letter is not in the word at all
 4. Use the hint button to reveal one correct letter
-5. Score points based on correct letters and positions
+5. Can reveal a word clue
+6. Score points based on correct letters and positions
 
 ## Installation & Setup
 
