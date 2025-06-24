@@ -237,7 +237,9 @@ const WordleGame = () => {
         <div className="game-rules">
           <h3>How to Play:</h3>
           <ul>
-            <li>Guess the 5-letter word in 7 tries. You can get up to two hints.</li>
+            <li>Guess the 5-letter word in 7 tries. You can get up to two hints, and reveal a
+              clue (5 point bonus if you don't though).
+            </li>
             <li><span className="hint-demo">Blue</span> = Letter hint in correct position (0 points)</li>
             <li><span className="correct-demo">Green</span> = Correct letter in correct position (2 points)</li>
             <li><span className="present-demo">Yellow</span> = Correct letter in wrong position (1 point)</li>
