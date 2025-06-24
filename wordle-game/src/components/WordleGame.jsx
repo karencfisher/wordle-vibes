@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getRandomWord, isValidWord } from '../utils/words';
+import { getRandomWord, isValidWord, evalGuess } from '../utils/words';
 import './WordleGame.css';
 
 const WordleGame = () => {
@@ -20,6 +20,7 @@ const WordleGame = () => {
   const [infoStatus, setInfoStatus] = useState('Show');
 
   const inputRef = useRef(null);
+  const guessValues = useRef(Array(7).fill(''))
 
   // Initialize game
   useEffect(() => {
@@ -27,7 +28,7 @@ const WordleGame = () => {
   }, []);
 
   const startNewGame = () => {
-    const newWord = getRandomWord();
+    const newWord = getRandomWord('guess');
     setTargetWord(newWord.word);
     setWordClue(newWord.clue);
     setGuesses(Array(7).fill(''));
@@ -43,85 +44,26 @@ const WordleGame = () => {
   };
 
   const calculateScore = (guess, target) => {
-    let score = 0;
-    const targetArray = target.split('');
-    const guessArray = guess.split('');
-    
-    // Track which letters in target have been matched
-    const targetUsed = Array(5).fill(false);
-    const guessUsed = Array(5).fill(false);
-    
-    // First pass: exact matches (green)
-    for (let i = 0; i < 5; i++) {
-      if (guessArray[i] === targetArray[i]) {
-        // hints don't count!
-        score += hintPositions.includes(i) ? 0: 2;
-        targetUsed[i] = true;
-        guessUsed[i] = true;
-      }
-    }
-    
-    // Second pass: letter exists but wrong position (yellow)
-    for (let i = 0; i < 5; i++) {
-      if (!guessUsed[i]) {
-        for (let j = 0; j < 5; j++) {
-          if (!targetUsed[j] && guessArray[i] === targetArray[j]) {
-            score += 1;
-            targetUsed[j] = true;
-            break;
-          }
-        }
-      }
-    }
+    const values = evalGuess(guess, target);
+    guessValues.current[currentGuess] = values;
+    const score = values.reduce((acc, val) => acc + val, 0) - hintPositions.length * 2;
 
     // Multiplier for correct guess
-    const multiplier = guess === target? 8  - currentGuess : 1;
-    
+    const multiplier = guess.toLowerCase() === target? 8  - currentGuess : 1;
     return score * multiplier;
   };
 
-  const getLetterStatus = (guess, target, position) => {
-    if (guess[position] === target[position]) {
+  const getLetterStatus = (guessIndex, position) => {
+    if (guessValues.current[guessIndex][position] === 2) {
       const status = hintPositions.includes(position) ? 'hint' : 'correct';
       return status
     }
-    
-    // Check if letter exists elsewhere in target
-    const targetArray = target.split('');
-    const guessArray = guess.split('');
-    
-    // Count occurrences and matches
-    let targetCount = 0;
-    let correctMatches = 0;
-    let yellowMatches = 0;
-    
-    // Count total occurrences of this letter in target
-    for (let i = 0; i < 5; i++) {
-      if (targetArray[i] === guess[position]) {
-        targetCount++;
-      }
+    else if (guessValues.current[guessIndex][position] === 1) {
+      return 'present';
     }
-    
-    // Count correct matches (green) of this letter before current position
-    for (let i = 0; i < position; i++) {
-      if (guessArray[i] === guess[position] && guessArray[i] === targetArray[i]) {
-        correctMatches++;
-      }
+    else {
+      return 'absent';
     }
-    
-    // Count yellow matches of this letter before current position
-    for (let i = 0; i < position; i++) {
-      if (guessArray[i] === guess[position] && guessArray[i] !== targetArray[i] && targetArray.includes(guessArray[i])) {
-        yellowMatches++;
-      }
-    }
-    
-    // If we haven't exceeded the count, it's yellow
-    if (correctMatches + yellowMatches < targetCount && targetArray.includes(guess[position])) {
-      return 'present'; // Yellow
-    }
-    
-    return 'absent'; // Gray
   };
 
   const handleInputChange = (e) => {
@@ -132,31 +74,27 @@ const WordleGame = () => {
   };
 
   const handleSubmitGuess = async () => {
-    if (currentInput.length !== 5) {
-      setMessage('Please enter a 5-letter word');
-      return;
-    }
-
     // Show loading message while validating
+    const normalizedInput = currentInput.toLowerCase();
     setMessage('Validating word...');
 
-    const isValid = await isValidWord(currentInput);
+    const isValid = await isValidWord(normalizedInput);
     if (!isValid) {
       setMessage('Not a valid word');
       return;
     }
 
-    setCurrentWordGuess(currentInput);
+    setCurrentWordGuess(normalizedInput);
 
     const newGuesses = [...guesses];
-    newGuesses[currentGuess] = currentInput;
+    newGuesses[currentGuess] = normalizedInput;
     setGuesses(newGuesses);
 
-    const guessScore = calculateScore(currentInput, targetWord);
+    const guessScore = calculateScore(normalizedInput, targetWord);
     const newHighScore = Math.max(score, guessScore);
     setScore(newHighScore);
 
-    if (currentInput === targetWord) {
+    if (normalizedInput.toLowerCase() === targetWord) {
       setGameStatus('won');
       setSessionScore(prevSession => prevSession + newHighScore);
       setMessage(`Congratulations! You won with a score of ${newHighScore}!`);
@@ -178,24 +116,20 @@ const WordleGame = () => {
   };
 
   const handleHint = () => {
-    if (gameStatus !== 'playing' || hintsUsed >= 2) return;
-    
-    const targetArray = targetWord.split('');
-    
-    // Find a position that hasn't been hinted yet and isn't already correct
-    for (let i = 0; i < 5; i++) {
-      if (!hintPositions.includes(i) && (!currentInput[i] || currentInput[i] !== targetArray[i])) {
-        let prefix = '';
-        if (i > 0) {
-          prefix = !currentWordGuess.substring(0, i) ? ' '.repeat(i): currentWordGuess.substring(0, i) ;
-        }
-        const newInput = prefix + targetArray[i] + currentWordGuess.substring(i + 1);
-        setCurrentWordGuess(newInput.padEnd(5, '').substring(0, 5));
-        setHintsUsed(prev => prev + 1);
-        setHintPositions(prev => [...prev, i]);
-        setMessage(`Hint ${hintsUsed + 1}/2: Letter ${i + 1} is "${targetArray[i].toUpperCase()}"`);
-        return;
-      }
+    if (hintsUsed >= 2) {
+      setMessage('Hints exhausted');
+      return;
+    }  
+    if (currentInput.length === 5) return;
+
+    // Add hint to text box
+    const index = currentInput.length;
+    setCurrentInput(prev => prev + targetWord[currentInput.length].toUpperCase());
+
+    if (!hintPositions.includes(index)) {
+      setHintsUsed(prev => prev + 1);
+      setHintPositions(prev => [...prev, index]);
+      setMessage(`Hint ${hintsUsed + 1}/2: Letter ${index + 1} is "${targetWord[index].toUpperCase()}"`);
     }
   };
 
@@ -236,7 +170,7 @@ const WordleGame = () => {
         <div>
           Wordle Vibes
         </div>
-        <div class="menu">
+        <div className="menu">
           <button onClick={toggleInfo}>{infoStatus} Info</button>
           <button onClick={startNewGame}>New Game</button>
         </div>
@@ -253,7 +187,7 @@ const WordleGame = () => {
           <div key={guessIndex} className="guess-row">
             {Array(5).fill('').map((_, letterIndex) => {
               const letter = guess[letterIndex] || '';
-              const status = guess ? getLetterStatus(guess, targetWord, letterIndex) : '';
+              const status = guess ? getLetterStatus(guessIndex, letterIndex) : '';
               const isCurrentRow = guessIndex === currentGuess && gameStatus === 'playing';
               const currentLetter = isCurrentRow ? currentWordGuess[letterIndex] || '' : letter;
               const isHintPosition = isCurrentRow && hintPositions.includes(letterIndex);
