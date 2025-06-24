@@ -28,7 +28,7 @@ const WordleGame = () => {
   }, []);
 
   const startNewGame = () => {
-    const newWord = getRandomWord('guess');
+    const newWord = getRandomWord();
     setTargetWord(newWord.word);
     setWordClue(newWord.clue);
     setGuesses(Array(7).fill(''));
@@ -50,7 +50,8 @@ const WordleGame = () => {
 
     // Multiplier for correct guess
     const multiplier = guess.toLowerCase() === target? 8  - currentGuess : 1;
-    return score * multiplier;
+    const bonus = !showClue ? 5 : 0;
+    return score * multiplier + bonus;
   };
 
   const getLetterStatus = (guessIndex, position) => {
@@ -241,8 +242,9 @@ const WordleGame = () => {
             <li><span className="correct-demo">Green</span> = Correct letter in correct position (2 points)</li>
             <li><span className="present-demo">Yellow</span> = Correct letter in wrong position (1 point)</li>
             <li><span className="absent-demo">Gray</span> = Letter not in word (0 points)</li>
-            <li><b>Scoring:</b> correct guess scores word score times multiplier (higher the fewer
-              guesses). Partial guess receives the best guessed word score.
+            <li><b>Scoring:</b> correct guess scores word score times multiplier (8 - 2 depending on
+            the number of guesses used), plus a bonus of 5 points if clue is not revealed. Partial 
+            guesses receive the best guess score.
             </li>
           </ul>
         </div>
