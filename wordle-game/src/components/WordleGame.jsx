@@ -95,7 +95,7 @@ const WordleGame = () => {
     const newHighScore = Math.max(score, guessScore);
     setScore(newHighScore);
 
-    if (normalizedInput.toLowerCase() === targetWord) {
+    if (normalizedInput === targetWord) {
       setGameStatus('won');
       setSessionScore(prevSession => prevSession + newHighScore);
       setMessage(`Congratulations! You won with a score of ${newHighScore}!`);
@@ -107,9 +107,6 @@ const WordleGame = () => {
       setCurrentGuess(currentGuess + 1);
 
       let hints = '';
-      for (let i = 0; i < 5; i++) {
-        hints += hintPositions.includes(i) ? targetWord[i] : ' ';
-      }
       setCurrentWordGuess(hints);
       setCurrentInput('');
       setMessage('');
@@ -191,13 +188,11 @@ const WordleGame = () => {
               const status = guess ? getLetterStatus(guessIndex, letterIndex) : '';
               const isCurrentRow = guessIndex === currentGuess && gameStatus === 'playing';
               const currentLetter = isCurrentRow ? currentWordGuess[letterIndex] || '' : letter;
-              const isHintPosition = isCurrentRow && hintPositions.includes(letterIndex);
               
               return (
                 <div
                   key={letterIndex}
-                  className={`letter-box ${status} ${isCurrentRow ? 'current' : ''} 
-                    ${isHintPosition && currentLetter && currentLetter !== ' ' ? 'hint' : ''}`}
+                  className={`letter-box ${status} ${isCurrentRow ? 'current' : ''}`}
                 >
                   {currentLetter.toUpperCase()}
                 </div>
